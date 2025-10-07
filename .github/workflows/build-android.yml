@@ -1,0 +1,34 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:   # permet de lancer manuellement
+  push:
+    branches: [ main ] # ou la branche que tu utilises
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v3
+
+      - name: Installer .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Installer MAUI Android
+        run: dotnet workload install maui-android
+
+      - name: Restaurer les dépendances
+        run: dotnet restore ./transcribe.io/transcribe.io.sln
+
+      - name: Compiler en APK
+        run: dotnet publish ./transcribe.io/transcribe.io/transcribe.io.csproj -c Release -f net8.0-android -o ./output
+
+      - name: Sauvegarder l’APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: apk
+          path: ./output
